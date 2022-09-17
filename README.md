@@ -1,171 +1,60 @@
-# Build your own social media analytics with Apache Kafka
+# Apache Kafka at the Edge
 
-This repository contains the demo files and applications for my conference talk _Build your own social media analytics with Apache Kafka_.
+This repository contains my demo of [Apache Kafka®](https://kafka.apache.org/) running at the edge.
+The demo shows how you can run Kubernetes with [Strimzi](https://strimzi.io/) based Apache Kafka cluster at the edge.
+This clusters collects data from sensor devices running locally and does local processing.
+The processed data are synced into the central Kafka cluster where they are collected and aggregated from multiple different edge locations.
 
 ## Slides
 
-The slides form the talk can be found on [Google Slides](https://docs.google.com/presentation/d/1Jb6KNpFTFygWxapPYSnBqQswkND1PEIt84RV2Kds83k/edit?usp=sharing).
+TODO: Slides do not yet exist.
 
-## Prerequisites
+## IoT Sensors
 
-1) Install the Strimzi operator.
-   The demo is currently using Strimzi 0.29.0, but it should work also with newer versions.
-   If needed, follow the documentation at [https://strimzi.io](https://strimzi.io).
+The code for the IoT device with sensors is in the [`esp32` directory](./esp32).
+In my case, the IoT device is the LOLIN32 Lite board with the BME280 sensor for temperature, humidity and atmospheric pressure.
+It is written for my particular device, but it should in general be compatible with other ESP32 boards as well.
 
-2) Create a Kubernetes Secret with credentials for your container registry.
-   It should follow the usual Kubernetes format:
-   ```yaml
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: docker-credentials
-   type: kubernetes.io/dockerconfigjson
-   data:
-     .dockerconfigjson: Cg==
-   ```
-   If you are going to use the OpenShift built-in registry, please eliminate this part and refer to the comment section in `02-connect.yaml`.
+The application is written using [MicroPython](https://micropython.org/) and does the following:
+* Connects to the WiFi
+* Syncs the time from the NTP servers
+* Periodically (every 5 seconds) collects the data from the sensors, formats them to JSON and pushes them using HTTP to the Strimzi Kafka Bridge.
 
-3) Register for the Twitter API, you need to apply for elevated access for Twitter API v2. Create a Kubernetes Secret with the Twitter credentials in the following format:
-   ```yaml
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: twitter-credentials
-   type: Opaque
-   data:
-     consumerKey: Cg==
-     consumerSecret: Cg==
-     accessToken: Cg==
-     accessTokenSecret: Cg==
-   ```
+The [Strimzi Kafka Bridge](https://github.com/strimzi/strimzi-kafka-bridge) forwards it to the local Apache Kafka cluster where the data are stored and processed.
 
-4) Deploy the Kafka cluster:
-   ```
-   kubectl apply -f 01-kafka.yaml
-   ```
-
-5) Once Kafka cluster is ready, deploy the Kafka Connect cluster which will also download the Camel Kafka Connectors for Twitter
-   ```
-   kubectl apply -f 02-connect.yaml
-   ```
-
-## Analyzing our own Twitter timeline
-
-1) Deploy the Camel Twitter Timeline connector
-   ```
-   kubectl apply -f 10-timeline.yaml
-   ```
-   That should create a topic `twitter-timeline` and start sending the twitter statuses to this topic.
-   You can use `kafkacat` to check them:
-   ```
-   kafkacat -C -b <brokerAddress> -o beginning -t twitter-timeline | jq .text
-   ```
-
-2) Deploy the Word Cloud and Tag Cloud applications:
-   ```
-   kubectl apply -f 11-timeline-word-cloud.yaml
-   kubectl apply -f 12-timeline-tag-cloud.yaml
-   ```
-   They create Ingress resources to be able to access their API and UI.
-   If needed, you might need to customize the Ingress or replace it with Route etc.
-   The source code for both applications is part of the repository.
-   You should see a word cloud similar to this:
-   ![Word Cloud](assets/word-cloud.png)
-
-## Doing a sentiment analysis of a search result
-
-1) Deploy the Camel Twitter Search connector
-   ```
-   kubectl apply -f 20-search.yaml
-   ```
-   That should create a topic `twitter-search` and start sending the twitter statuses to this topic. 
-   You can change the search term in the connector configuration (YAML file)
-   You can use `kafkacat` to check them:
-   ```
-   kafkacat -C -b <brokerAddress> -o beginning -t twitter-search | jq .text
-   ```
-
-2) Deploy the Camel Twitter Timeline connector
-   ```
-   kubectl apply -f 21-alerts.yaml
-   ```
-   That should create a topic `twitter-alerts` and consume it.
-   When a message is sent to this topic, it will be published to your timeline as a retweet.
-   As an alternative, you can also uncomment the Camel Twitter DM connector and instead of your timeline send it as a direct message to the account specified in `.spec.config` in `camel.sink.path.user` (Update this to your Twitter screen name (username) before deploying the connector).
-   You can use `kafkacat` to check them:
-   ```
-   kafkacat -C -b <brokerAddress> -o beginning -t twitter-alerts | jq .text
-   ```
-
-3) Deploy the Sentiment Analysis applications:
-   ```
-   kubectl apply -f 22-sentiment-analysis.yaml
-   ```
-   Now you can test the sentiment analysis by sending tweets with the hashtag specified in `.camel.source.path.keywords: "#YOURHASHTAG"`. It will read the tweets found by the search connector and do a sentiment analysis of them.
-   If they are positive or negative on more than 90%, it will forward them to the alert topic.
-   The connector will pick them up from this topic and send them as re-tweets on your Twitter account.
-   
-   ![Sentiment Analysis](assets/sentiment-analysis.png)
-
-## Doing ad-hoc analysis
-
-1) Open the `ad-hoc` project in an IDE.
-   Check out the source code and configure it in `./src/main/resources/application.properties`.
-   If you want, change the code to prepare a new experiment.
-   Once ready, run the code using `mvn quarkus:dev` and watch the output.
-
-## Other examples
-
-You can use also other examples and play with them.
-The files `90-kafka-search.yaml`, `91-strimzi-search.yaml`, and `92-avfc-search.yaml` contain some other example searches as well.
-
-## Useful commands
-
-These commands might be useful when playing with the demo:
-
-### Reseting the streams applications:
-
-1) Stop the application
-
-2) Reset the application context
-   ```
-   bin/kafka-streams-application-reset.sh --bootstrap-servers <brokerAddress> --application-id <applicationId> --execute
-   ```
-
-3) Reset the offset
-   ```
-   hacking/kafka/bin/kafka-consumer-groups.sh --bootstrap-server <brokerAddress> --group <applicationId> --topic <sourceTopic> --to-earliest --reset-offsets --execute
-   ```
-
-### Reading the tweets with `kafkacat`
-
-```
-kafkacat -G <groupId> -C -b <brokerAddress> -o beginning -t <topic> | jq .text
+The JSON message looks like this:
+```json
+{
+    "temperature": "20.57C",
+    "timestamp": "2022-09-17 18:48:56",
+    "longitude": 14.4378,
+    "humidity": "54.87%",
+    "pressure": "981.59hPa",
+    "latitude": 50.0755
+}
 ```
 
-You can also pipe the output to `jq` to pretty-print the JSON and use `jq` to for example extract the status message:
+The `latitude` and `longitude` is the location of the sensor used to show it on the map.
+The `timestamp` is the time when the data were taken.
+And the remaining fields are taken from the sensor.
 
-```
-kafkacat -G <groupId> -C -b <brokerAddress> -o beginning -t <topic> | jq .text
-```
+## Edge cluster
 
-## Recordings & Slides
+TODO: Not done yet
 
-### MakeIT 2022
+## HQ cluster
 
-This talk was presented at [MakeIT 2022](https://makeit.si/) in-person conference.
-There is no recording, but you can have a look at the [slides](https://docs.google.com/presentation/d/1lkwdoh6Dqzcj1pWPkRkzuKjy7ie7B2Pfm9D3UaIwiFg/edit?usp=sharing).
+The HQ cluster is the central cluster which collects the data form all the different edge locations and aggregates them.
+Currently, the HQ has a _frontend_ application which displays the data from the sensors on a map.
 
-### DevConf.CZ 2022
+### Frontend
 
-This talk was presented at [DevConf.CZ 2022](https://devconf.cz/).
-You can have a look at the [slides](https://docs.google.com/presentation/d/1vW_oTDelloUPyTkbDLiNluZXIi5t0wfFWSIDnKapESc/edit?usp=sharing) and the [recording](https://youtu.be/bTxdZOWLyvI) from the conference here:
+The _frontend_ is a [Quarkus](https://quarkus.io/) based application which serves a website and an API.
+The Quarkus backend connects to Kafka, gets the data from the sensors and serves them through an REST API.
+The website is based on a [Google Charts](https://developers.google.com/chart/interactive/docs/gallery/map) based map.
+It gets the sensor data from the REST API and shows them on the map.
 
-[![Build your own social media analytics with Apache Kafka - DataCon LA 2021 recording](https://user-images.githubusercontent.com/5658439/152701013-8c18f4fa-18fe-4d5c-a838-10006446a3ab.png)](https://youtu.be/bTxdZOWLyvI "Build your own social media analytics with Apache Kafka - DevConf.CZ 2022 recording")
+![The _frontend_ application](./assets/frontend-map.png "The _frontend_ application")
 
-### DataCon LA 2021
-
-This talk was presented at [DataCon LA 2021](https://www.dataconla.com/).
-You can have a look at the [slides](https://docs.google.com/presentation/d/18bmiZagwrAe8fnuuyBs45l1U5OHIGwK9pjLALpcC23E/edit?usp=sharing) and the [recording](https://youtu.be/niQEglT_nYQ) from the conference here:
-
-[![Build your own social media analytics with Apache Kafka - DataCon LA 2021 recording](https://user-images.githubusercontent.com/5658439/135720151-cde6b04a-d006-4901-a089-487aaf32cac5.png)](http://www.youtube.com/watch?v=niQEglT_nYQ "Build your own social media analytics with Apache Kafka - DataCon LA 2021 recording")
+_Note: If you want to get rid of the `For developer purposes only` message, you have to register for an API key._
+_For more details about getting the API key, see: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings_
