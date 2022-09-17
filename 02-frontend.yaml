@@ -1,0 +1,105 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: frontend
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Source topic with sensor data
+      - resource:
+          type: topic
+          name: sensor-data
+        operation: Read
+      # Group used by the Frontend app
+      - resource:
+          type: group
+          name: frontend
+        operation: Read
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/scholzj/kafka-at-the-edge-frontend:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: my-cluster-kafka-bootstrap:9093
+            - name: KAFKA_GROUP_ID
+              value: frontend
+            - name: SENSOR_DATA_TOPIC
+              value: sensor-data
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: SSL
+            - name: KAFKA_SSL_TRUSTSTORE_TYPE
+              value: PKCS12
+            - name: KAFKA_SSL_TRUSTSTORE_LOCATION
+              value: /etc/truststore/ca.p12
+            - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-cluster-cluster-ca-cert
+                  key: ca.password
+            - name: KAFKA_SSL_KEYSTORE_TYPE
+              value: PKCS12
+            - name: KAFKA_SSL_KEYSTORE_LOCATION
+              value: /etc/keystore/user.p12
+            - name: KAFKA_SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: frontend
+                  key: user.password
+          volumeMounts:
+            - name: truststore
+              mountPath: "/etc/truststore"
+              readOnly: true
+            - name: keystore
+              mountPath: "/etc/keystore"
+              readOnly: true
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: truststore
+          secret:
+            secretName: my-cluster-cluster-ca-cert
+            items:
+              - key: ca.p12
+                path: ca.p12
+        - name: keystore
+          secret:
+            secretName: frontend
+            items:
+              - key: user.p12
+                path: user.p12
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

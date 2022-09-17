@@ -1,0 +1,4 @@
+.vscode
+
+# To not commit credentials by mistake
+**/wificredentials.py

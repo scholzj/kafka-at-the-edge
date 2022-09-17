@@ -1,0 +1,22 @@
+{
+  "upload": {
+    "port": "/dev/tty.usbserial-2140"
+  },
+  "serial": {
+    "port": "/dev/tty.usbserial-2140"
+  },
+  "ignore": {
+    "extensions": [
+      ".micropythonrc",
+      ".vscode",
+      ".gitignore"
+    ],
+    "directories": [
+      ".vscode/"
+    ]
+  },
+  "tools": {
+    "ampy": "/opt/homebrew/bin/ampy",
+    "rshell": "/opt/homebrew/bin/rshell"
+  }
+}
