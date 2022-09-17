@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Kafka @ Edge</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+    </style>
+
+    <body>
+        <script type="text/javascript">
+          google.charts.load("current", {
+            "packages":["map"],
+            // Note: Without the API Key the map will be watermarked with "For developer purposes only"
+            // For more details about getting the key, see: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
+            //"mapsApiKey": "<ApiKey>"
+          });
+
+          google.charts.setOnLoadCallback(drawChart);
+
+          async function drawChart() {
+              // Get the sensor data from the REST API
+              const response = await fetch('api/sensors/');
+              const sensorData = await response.json()
+
+              // Creates the data in the format needed by the chart
+              const chartData = [['Lat', 'Long', 'Name']]
+              sensorData.forEach((sensor) => {
+                  const tooltip = `Temp: ${sensor.temperature}<br /> Hum: ${sensor.humidity}<br /> Press: ${sensor.pressure}<br /> Last updated: ${sensor.timestamp}`
+                  chartData.push([sensor.latitude, sensor.longitude, tooltip])
+              })
+
+              const data = google.visualization.arrayToDataTable(chartData);
+
+              const map = new google.visualization.Map(document.getElementById('map'));
+              map.draw(data, {
+                  showTooltip: false,
+                  showInfoWindow: true,
+                  // Needed when not running through a webserver
+                  // icons: {
+                  //     default: {
+                  //         normal: 'https://maps.google.com/mapfiles/ms/micons/red-dot.png',
+                  //         selected: 'https://maps.google.com/mapfiles/ms/micons/blue-dot.png'
+                  //     }
+                  // },
+                  enableScrollWheel: true,
+                  mapType: "normal",
+                  zoomLevel: 3
+              });
+          }
+        </script>
+
+        <div id="map"></div>
+    </body>
+</html>
