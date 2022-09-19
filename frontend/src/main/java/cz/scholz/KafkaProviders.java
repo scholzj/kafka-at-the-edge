@@ -18,8 +18,6 @@ public class KafkaProviders {
 
     @Produces
     KafkaConsumer<String, SensorData> getConsumer() {
-        System.out.println("Providing consumer");
-        System.out.println("Consumer config: " + config);
         return new KafkaConsumer<>(config,
                 new StringDeserializer(),
                 new SensorData.SensorDataDeserializer());

@@ -1,6 +1,7 @@
 package cz.scholz;
 
 import cz.scholz.model.SensorData;
+import io.quarkus.logging.Log;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -33,13 +34,12 @@ public class SensorDataEndpoint {
     public void initialize(@Observes StartupEvent ev) {
         consumer.subscribe(Collections.singleton(sensorDataTopic));
         new Thread(() -> {
-            System.out.println("Starting consumer");
             while (!done) {
                 final ConsumerRecords<String, SensorData> consumerRecords = consumer.poll(Duration.ofSeconds(1));
 
                 consumerRecords.forEach(record -> {
                     sensorData.put(record.key(), record.value());
-                    System.out.printf("Polled Record:(%s, %s, %d, %d)\n",
+                    Log.debugf("Polled Record:(%s, %s, %d, %d)\n",
                             record.key(), record.value(),
                             record.partition(), record.offset());
                 });
@@ -49,14 +49,12 @@ public class SensorDataEndpoint {
     }
 
     public void terminate(@Observes ShutdownEvent ev) {
-        System.out.println("Terminating");
         done = true;
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<SensorData> sensorData() {
-        System.out.println("Data queried");
         return sensorData.values();
     }
 }

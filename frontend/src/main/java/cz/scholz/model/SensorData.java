@@ -1,6 +1,7 @@
 package cz.scholz.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.logging.Log;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import java.util.Map;
@@ -82,14 +83,13 @@ public class SensorData {
 
         @Override
         public Object deserialize(String s, byte[] bytes) {
-            System.out.println("Deserializing");
             ObjectMapper mapper = new ObjectMapper();
             SensorData obj = null;
 
             try {
                 obj = mapper.readValue(bytes, SensorData.class);
             } catch (Exception e) {
-                System.out.println("Ups: " + e);
+                Log.error("Failed to deserialize sensor data", e);
             }
 
             return obj;
