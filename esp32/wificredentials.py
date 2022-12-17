@@ -1,3 +1,3 @@
 # Wifi configuration
-SSID = 'YOUR_SSID'
-PASSWORD = 'YOUR_PASSWORD'
+SSID = 'KAFKA_AT_THE_EDGE'
+PASSWORD = 'kafkaattheedge'
