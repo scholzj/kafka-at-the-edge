@@ -1,0 +1,45 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-bridge
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Need to publish to the sensor data topic
+      - resource:
+          type: topic
+          name: sensor-data
+        operations: [ Write, Describe ]
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaBridge
+metadata:
+  name: my-bridge
+  labels:
+    app: my-bridge
+spec:
+  replicas: 1
+  bootstrapServers: my-cluster-kafka-bootstrap:9093
+  http:
+    port: 8080
+  resources:
+    requests:
+      memory: 512Mi
+    limits:
+      memory: 512Mi
+  tls:
+    trustedCertificates:
+    - secretName: my-cluster-cluster-ca-cert
+      certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: my-bridge
+      certificate: user.crt
+      key: user.key

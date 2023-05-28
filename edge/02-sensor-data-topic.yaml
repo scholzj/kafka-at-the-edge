@@ -5,10 +5,9 @@ metadata:
   labels:
     strimzi.io/cluster: my-cluster
 spec:
-  partitions: 3
-  replicas: 3
+  partitions: 1
+  replicas: 1
   config:
-    #cleanup.policy: compact
     retention.ms: 604800000
     segment.bytes: 107374182
-    min.insync.replicas: 2
+    min.insync.replicas: 1

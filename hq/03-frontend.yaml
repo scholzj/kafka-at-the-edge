@@ -14,12 +14,12 @@ spec:
       - resource:
           type: topic
           name: sensor-data
-        operation: Read
+        operations: [ Read ]
       # Group used by the Frontend app
       - resource:
           type: group
           name: frontend
-        operation: Read
+        operations: [ Read ]
 ---
 
 apiVersion: apps/v1
@@ -103,3 +103,22 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: edge.p50
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 8080

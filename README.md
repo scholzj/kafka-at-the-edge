@@ -44,12 +44,12 @@ TODO: Not done yet
 
 ## HQ cluster
 
-The HQ cluster is the central cluster which collects the data form all the different edge locations and aggregates them.
-Currently, the HQ has a _frontend_ application which displays the data from the sensors on a map.
+The HQ cluster is the central cluster that collects the data form all the different edge locations and aggregates them.
+Currently, the HQ has a _frontend_ application that displays the data from the sensors on a map.
 
 ### Frontend
 
-The _frontend_ is a [Quarkus](https://quarkus.io/) based application which serves a website and an API.
+The _frontend_ is a [Quarkus](https://quarkus.io/) based application that serves a website and an API.
 The Quarkus backend connects to Kafka, gets the data from the sensors and serves them through an REST API.
 The website is based on a [Google Charts](https://developers.google.com/chart/interactive/docs/gallery/map) based map.
 It gets the sensor data from the REST API and shows them on the map.
