@@ -18,7 +18,7 @@ It is written for my particular device, but it should in general be compatible w
 The application is written using [MicroPython](https://micropython.org/) and does the following:
 * Connects to the WiFi
 * Syncs the time from the NTP servers
-* Periodically (every 5 seconds) collects the data from the sensors, formats them to JSON and pushes them using HTTP to the Strimzi Kafka Bridge.
+* Periodically (every 5 seconds) collects the data from the sensors, formats them to JSON, and pushes them using HTTP to the Strimzi Kafka Bridge.
 
 The [Strimzi Kafka Bridge](https://github.com/strimzi/strimzi-kafka-bridge) forwards it to the local Apache Kafka cluster where the data are stored and processed.
 

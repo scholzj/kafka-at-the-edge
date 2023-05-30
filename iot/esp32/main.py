@@ -12,7 +12,8 @@ LATITUDE = 50.0755 # Latitude of the sensor
 LONGITUDE = 14.4378 # Logitude of the sensor
 KEY = str(LATITUDE) + "x" + str(LONGITUDE)
 TOPIC = "sensor-data"
-BRIDGE_URL = "http://my-strimzi-bridge:8080/topics/" + TOPIC
+#BRIDGE_URL = "http://my-bridge-bridge-service:8080/topics/" + TOPIC
+BRIDGE_URL = "http://10.43.184.200:8080/topics/" + TOPIC
 
 while True:
   try:

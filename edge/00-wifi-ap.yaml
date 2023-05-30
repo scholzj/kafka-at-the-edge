@@ -1,3 +1,41 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wifi-ap-configuration
+stringData:
+  hostapd.conf: |
+        interface=wlan0
+        ssid=KAFKA_AT_THE_EDGE
+        wpa_passphrase=kafkaattheedge
+        hw_mode=g
+        channel=6
+        ieee80211n=1
+        wmm_enabled=1
+        ignore_broadcast_ssid=1 # Does it need to be 2 for IoT?
+        wpa=2
+        wpa_key_mgmt=WPA-PSK
+        rsn_pairwise=CCMP
+        logger_stdout=2
+        logger_stdout_level=0
+        ctrl_interface=/var/run/hostapd
+  wlan0-dnsmasq.conf: |
+        interface=wlan0
+        bind-interfaces
+        #server=/cluster.local/10.43.0.10 # K3S DNS Service
+        #server=10.43.0.10 # K3S DNS Service
+        #no-resolv # Disables using the regular resolv.conf from the host
+        dhcp-option=3,192.168.66.1
+        dhcp-option=6,192.168.66.1
+        expand-hosts
+        domain=edge
+        #local=/edge/
+        dhcp-authoritative
+        dhcp-range=192.168.66.50,192.168.66.150,12h
+        dhcp-leasefile=/var/lib/misc/dnsmasq.leases
+        log-queries
+        log-dhcp
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,12 +53,49 @@ spec:
         infra: ap
     spec:
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 300
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
       containers:
       - name: wifi-ap
         image: ghcr.io/scholzj/kafka-at-the-edge-wifi-ap:latest
+        volumeMounts:
+          - name: hostapd
+            mountPath: /etc/hostapd/hostapd.conf
+            subPath: hostapd.conf
+          - name: dnsmasq
+            mountPath: /etc/dnsmasq.d/wlan0-dnsmasq.conf
+            subPath:  wlan0-dnsmasq.conf
         securityContext:
           privileged: true # otherwise hostapd can't change channels for some reason
           capabilities:
             add:
               - NET_ADMIN
               - NET_RAW
+      volumes:
+        - name: hostapd
+          secret:
+            secretName: wifi-ap-configuration
+            items:
+              - key: hostapd.conf
+                path: hostapd.conf
+        - name: dnsmasq
+          secret:
+            secretName: wifi-ap-configuration
+            items:
+              - key: wlan0-dnsmasq.conf
+                path: wlan0-dnsmasq.conf

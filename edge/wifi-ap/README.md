@@ -2,7 +2,7 @@
 
 **Based on https://github.com/redhat-et/AI-for-edge-microshift-demo/blob/main/wifi-ap**
 
-This container creates a WiFi access point which can be run as a Pod on your Raspberry Pi 4 based Kubernetes cluster.
+This container creates a WiFi access point that can be run as a Pod on your Raspberry Pi 4 based Kubernetes cluster.
 It is used to provide connectivity between the IoT devices and the Kafka cluster running at the edge.
 
 The default (hidden) SSID is `KAFKA_AT_THE_EDGE` with password `kafkaattheedge`.
