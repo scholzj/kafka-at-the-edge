@@ -21,8 +21,8 @@ stringData:
   wlan0-dnsmasq.conf: |
         interface=wlan0
         bind-interfaces
-        #server=/cluster.local/10.43.0.10 # K3S DNS Service
-        #server=10.43.0.10 # K3S DNS Service
+        server=/cluster.local/10.43.0.10 # K3S DNS Service
+        server=10.43.0.10 # K3S DNS Service
         #no-resolv # Disables using the regular resolv.conf from the host
         dhcp-option=3,192.168.66.1
         dhcp-option=6,192.168.66.1
