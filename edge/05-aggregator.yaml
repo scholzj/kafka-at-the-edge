@@ -1,0 +1,103 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: aggregator
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Source topic
+      - resource:
+          type: topic
+          name: sensor-data
+        operations: [ Read ]
+      # Target topic
+      - resource:
+          type: topic
+          name: sensor-data-aggregated
+        operations: [ Write ]
+      # Group used by the Kafka Streams app
+      - resource:
+          type: group
+          name: sensor-data-aggregator
+        operations: [ Read ]
+      # Kafka Streams API intrernal topics
+      - resource:
+          type: topic
+          name: sensor-data-aggregator-
+          patternType: prefix
+        operations: [ Write, Read, Create ]
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aggregator
+  name: aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aggregator
+  template:
+    metadata:
+      labels:
+        app: aggregator
+    spec:
+      containers:
+        - name: aggregator
+          image: ghcr.io/scholzj/kafka-at-the-edge-aggregator:latest
+          env:
+            - name: QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS
+              value: my-cluster-kafka-bootstrap:9093
+            - name: QUARKUS_KAFKA_STREAMS_APPLICATION_ID
+              value: sensor-data-aggregator
+            - name: QUARKUS_KAFKA_STREAMS_TOPICS
+              value: sensor-data,sensor-data-aggregated
+            - name: QUARKUS_KAFKA_STREAMS_SECURITY_PROTOCOL
+              value: SSL
+            - name: QUARKUS_KAFKA_STREAMS_SSL_TRUSTSTORE_TYPE
+              value: PKCS12
+            - name: QUARKUS_KAFKA_STREAMS_SSL_TRUSTSTORE_LOCATION
+              value: /etc/truststore/ca.p12
+            - name: QUARKUS_KAFKA_STREAMS_SSL_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-cluster-cluster-ca-cert
+                  key: ca.password
+            - name: QUARKUS_KAFKA_STREAMS_SSL_KEYSTORE_TYPE
+              value: PKCS12
+            - name: QUARKUS_KAFKA_STREAMS_SSL_KEYSTORE_LOCATION
+              value: /etc/keystore/user.p12
+            - name: QUARKUS_KAFKA_STREAMS_SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: aggregator
+                  key: user.password
+          volumeMounts:
+            - name: truststore
+              mountPath: "/etc/truststore"
+              readOnly: true
+            - name: keystore
+              mountPath: "/etc/keystore"
+              readOnly: true
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: truststore
+          secret:
+            secretName: my-cluster-cluster-ca-cert
+            items:
+              - key: ca.p12
+                path: ca.p12
+        - name: keystore
+          secret:
+            secretName: aggregator
+            items:
+              - key: user.p12
+                path: user.p12
