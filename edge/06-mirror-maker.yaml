@@ -1,0 +1,57 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: my-mirror-maker
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Source topic
+      - resource:
+          type: topic
+          name: sensor-data-aggregated
+        operations: [ Read, Describe ]
+      # Group used by the Kafka Streams app
+      - resource:
+          type: group
+          name: my-mirror-maker
+        operations: [ Read ]
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker
+metadata:
+  name: my-mirror-maker
+spec:
+  version: 3.4.0
+  replicas: 1
+  consumer:
+    bootstrapServers: my-cluster-kafka-bootstrap:9093 # Source (edge) cluster
+    groupId: my-mirror-maker
+    tls:
+      trustedCertificates:
+        - secretName: my-cluster-cluster-ca-cert
+          certificate: ca.crt
+    authentication:
+      type: tls
+      certificateAndKey:
+        secretName: my-mirror-maker
+        certificate: user.crt
+        key: user.key
+  producer:
+    bootstrapServers: 192.168.1.86:32455 # Target (HQ) cluster
+    tls:
+      trustedCertificates:
+        - secretName: hq-cluster-ca-cert
+          certificate: ca.crt
+    authentication:
+      type: tls
+      certificateAndKey:
+        secretName: hq-cluster-user
+        certificate: user.crt
+        key: user.key
+  include: "sensor-data-aggregated"
