@@ -63,9 +63,9 @@ public class SensorDataEndpoint {
 
         // Add the record as a Prometheus metric
         List<Tag> tags = List.of(Tag.of("long", String.valueOf(value.getLongitude())), Tag.of("lat", String.valueOf(value.getLatitude())));
-        registry.gauge("sensor.data.temperature", tags, value.getTemperature());
-        registry.gauge("sensor.data.humidity", tags, value.getHumidity());
-        registry.gauge("sensor.data.pressure", tags, value.getPressure());
+        registry.gauge("sensor.data.temperature", tags, sensorData, d -> d.get(key).getTemperature());
+        registry.gauge("sensor.data.humidity", tags, sensorData, d -> d.get(key).getHumidity());
+        registry.gauge("sensor.data.pressure", tags, sensorData, d -> d.get(key).getPressure());
     }
 
     public void terminate(@Observes ShutdownEvent ev) {

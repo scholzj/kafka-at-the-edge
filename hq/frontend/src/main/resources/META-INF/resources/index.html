@@ -33,7 +33,7 @@
               // Creates the data in the format needed by the chart
               const chartData = [['Lat', 'Long', 'Name']]
               sensorData.forEach((sensor) => {
-                  const tooltip = `Temp: <strong>${sensor.temperature}°C</strong><br /> Hum: <strong>${sensor.humidity}%</strong><br /> Press: <strong>${sensor.pressure}hPa</strong><br /> Last updated: <strong>${sensor.timestamp}</strong>`
+                  const tooltip = `Temp: <strong><a href=\"http://prometheus.p50/graph?g0.range_input=1h&g0.stacked=0&g0.expr=sensor_data_temperature%7Blong%3D%22${sensor.longitude}%22%2C%20lat%3D%22${sensor.latitude}%22%7D&g0.tab=0\">${sensor.temperature}°C</a></strong><br /> Hum: <strong><a href=\"http://prometheus.p50/graph?g0.range_input=1h&g0.stacked=0&g0.expr=sensor_data_humidity%7Blong%3D%22${sensor.longitude}%22%2C%20lat%3D%22${sensor.latitude}%22%7D&g0.tab=0\">${sensor.humidity}%</a></strong><br /> Press: <strong><a href=\"http://prometheus.p50/graph?g0.range_input=1h&g0.stacked=0&g0.expr=sensor_data_pressure%7Blong%3D%22${sensor.longitude}%22%2C%20lat%3D%22${sensor.latitude}%22%7D&g0.tab=0\">${sensor.pressure}hPa</a></strong><br /> Last updated: <strong>${sensor.timestamp}</strong>`
                   chartData.push([sensor.latitude, sensor.longitude, tooltip])
               })
 
