@@ -19,10 +19,13 @@ while True:
     temp = bme.temperature
     hum = bme.humidity
     pres = bme.pressure
-    print('Temperature: ', temp)
-    print('Humidity: ', hum)
-    print('Pressure: ', pres)
-    # ...
+
+    print('Received sensor data:')
+    print('    Temperature: ', temp)
+    print('    Humidity: ', hum)
+    print('    Pressure: ', pres)
+    print()
+    
     currentTime = utime.localtime()
     produceRequest = {
       "records": [
@@ -32,16 +35,16 @@ while True:
             "latitude": LATITUDE,
             "longitude": LONGITUDE,
             "timestamp": "{}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}".format(currentTime[0], currentTime[1], currentTime[2], currentTime[3], currentTime[4], currentTime[5]),
-            "temperature": temp,
-            "humidity": hum,
-            "pressure": pres
+            "temperature": float(temp.replace("C", "")),
+            "humidity": float(hum.replace("%", "")),
+            "pressure": float(pres.replace("hPa", ""))
             }
           }
         ]
       }
-    # ...
+    
     response = urequests.post(BRIDGE_URL, json=produceRequest, headers={"Content-Type": "application/vnd.kafka.json.v2+json"})
-    # ...
+    
     if response.status_code != 200:
       print('Publishing data sensor data failed!')
       print('Status code: ' + str(response.status_code))
