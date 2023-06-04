@@ -1,8 +1,9 @@
-# sensor-map Project
+# Frontend
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+The frontend is a [Quarkus](https://quarkus.io/)-based application that serves a website and an API.
+The Quarkus backend connects to Kafka, gets the data from the sensors, and serves them through an REST API.
+The website is based on a [Google Charts](https://developers.google.com/chart/interactive/docs/gallery/map)-based map.
+It gets the sensor data from the REST API and shows them on the map.
 
 ## Running the application in dev mode
 

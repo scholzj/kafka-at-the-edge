@@ -1,8 +1,8 @@
-# aggregator
+# Aggregator
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+The aggregator application is based on Apache Kafka Streams API and on the Quarkus framework.
+The aggregator is reading the data produced by the IoT sensors from the Kafka cluster and calculates average values over 1-minute windows.
+The results of these calculations are sent to another topic, which is later mirrored by the Mirror Maker to the HQ cluster.
 
 ## Running the application in dev mode
 
