@@ -5,9 +5,9 @@ import io.smallrye.common.annotation.Identifier;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import java.util.Map;
 
 @ApplicationScoped
@@ -17,8 +17,9 @@ public class KafkaProviders {
     Map<String, Object> config;
 
     @Produces
+    @SuppressWarnings("unchecked")
     KafkaConsumer<String, SensorData> getConsumer() {
-        return new KafkaConsumer<>(config,
+        return new KafkaConsumer<String, SensorData>(config,
                 new StringDeserializer(),
                 new SensorData.SensorDataDeserializer());
     }
