@@ -13,7 +13,7 @@ spec:
       # Source topic with sensor data
       - resource:
           type: topic
-          name: sensor-data
+          name: sensor-data-aggregated
         operations: [ Read ]
       # Group used by the Frontend app
       - resource:
@@ -47,7 +47,7 @@ spec:
             - name: KAFKA_GROUP_ID
               value: frontend
             - name: SENSOR_DATA_TOPIC
-              value: sensor-data
+              value: sensor-data-aggregated
             - name: KAFKA_SECURITY_PROTOCOL
               value: SSL
             - name: KAFKA_SSL_TRUSTSTORE_TYPE

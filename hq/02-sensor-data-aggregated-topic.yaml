@@ -1,7 +1,7 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: sensor-data
+  name: sensor-data-aggregated
   labels:
     strimzi.io/cluster: my-cluster
 spec:

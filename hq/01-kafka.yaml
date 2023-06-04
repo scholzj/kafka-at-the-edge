@@ -18,12 +18,10 @@ spec:
       -Xms: 1024m
       -Xmx: 1024m
     listeners:
-      # - name: plain
-      #   port: 9092
-      #   type: internal
-      #   tls: false
-      #   authentication:
-      #     type: scram-sha-512
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
       - name: tls
         port: 9093
         type: internal
@@ -32,23 +30,18 @@ spec:
           type: tls
       - name: external
         port: 9094
-        type: ingress
+        type: nodeport
         tls: true
         authentication:
           type: tls
         configuration:
-          class: nginx
           bootstrap:
-            host: bootstrap.p50
-          brokers:
-            - broker: 0
-              host: broker-0.p50
-            - broker: 1
-              host: broker-1.p50
-            - broker: 2
-              host: broker-2.p50
+            alternativeNames:
+              - 192.168.1.86
     authorization:
       type: simple
+      superUsers:
+        - ANONYMOUS
     config:
       auto.create.topics.enable: "false"
       offsets.topic.replication.factor: 3

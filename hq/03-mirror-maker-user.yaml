@@ -1,0 +1,17 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: edge-mirror-maker
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Source topic
+      - resource:
+          type: topic
+          name: sensor-data-aggregated
+        operations: [ Write, Describe ]

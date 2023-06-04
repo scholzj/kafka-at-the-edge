@@ -33,7 +33,7 @@
               // Creates the data in the format needed by the chart
               const chartData = [['Lat', 'Long', 'Name']]
               sensorData.forEach((sensor) => {
-                  const tooltip = `Temp: ${sensor.temperature}<br /> Hum: ${sensor.humidity}<br /> Press: ${sensor.pressure}<br /> Last updated: ${sensor.timestamp}`
+                  const tooltip = `Temp: <strong>${sensor.temperature}°C</strong><br /> Hum: <strong>${sensor.humidity}%</strong><br /> Press: <strong>${sensor.pressure}hPa</strong><br /> Last updated: <strong>${sensor.timestamp}</strong>`
                   chartData.push([sensor.latitude, sensor.longitude, tooltip])
               })
 
@@ -52,7 +52,7 @@
                   // },
                   enableScrollWheel: true,
                   mapType: "normal",
-                  zoomLevel: 3
+                  zoomLevel: 9
               });
           }
         </script>

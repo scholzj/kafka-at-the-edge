@@ -11,14 +11,14 @@ public class SensorData {
     double longitude;
     String timestamp;
 
-    String temperature;
-    String humidity;
-    String pressure;
+    double temperature;
+    double humidity;
+    double pressure;
 
     public SensorData() {
     }
 
-    public SensorData(double latitude, double longitude, String timestamp, String temperature, String humidity, String pressure) {
+    public SensorData(double latitude, double longitude, String timestamp, double temperature, double humidity, double pressure) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
@@ -51,36 +51,31 @@ public class SensorData {
         this.timestamp = timestamp;
     }
 
-    public String getTemperature() {
+    public double getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(String temperature) {
+    public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
-    public String getHumidity() {
+    public double getHumidity() {
         return humidity;
     }
 
-    public void setHumidity(String humidity) {
+    public void setHumidity(double humidity) {
         this.humidity = humidity;
     }
 
-    public String getPressure() {
+    public double getPressure() {
         return pressure;
     }
 
-    public void setPressure(String pressure) {
+    public void setPressure(double pressure) {
         this.pressure = pressure;
     }
 
     public static class SensorDataDeserializer implements Deserializer {
-        @Override
-        public void configure(Map map, boolean b) {
-            // Nothing to do
-        }
-
         @Override
         public Object deserialize(String s, byte[] bytes) {
             ObjectMapper mapper = new ObjectMapper();
@@ -94,10 +89,17 @@ public class SensorData {
 
             return obj;
         }
+    }
 
-        @Override
-        public void close() {
-            // Nothing to close
-        }
+    @Override
+    public String toString() {
+        return "SensorData{" +
+                "latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", timestamp='" + timestamp + '\'' +
+                ", temperature='" + temperature + '\'' +
+                ", humidity='" + humidity + '\'' +
+                ", pressure='" + pressure + '\'' +
+                '}';
     }
 }
