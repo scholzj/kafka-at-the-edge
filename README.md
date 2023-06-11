@@ -124,3 +124,20 @@ On the IoT device:
 15. Upload the MicroPython-based application to your IoT device.
     The source codes can be found in the [`iot/esp32/`](./iot/esp32/) directory.
     Before uploading it, make sure to update the WiFi credentials if needed and the address of the Strimzi HTTP Bridge running on the Edge cluster.
+
+
+Once running:
+
+16. You can check the messages being received from the sensor using the following command run on the edge cluster:
+    ```
+    kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.35.1-kafka-3.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic sensor-data
+    ```
+17. And the same for the aggregated data:
+    ```
+    kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.35.1-kafka-3.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic sensor-data-aggregated
+    ```
+18. For the aggregated topic, you can do the same as well on the HQ cluster where you can confirm that the data are properly mirrored.
+    ```
+    kubectl run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.35.1-kafka-3.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic sensor-data-aggregated
+    ```
+19. You can also check the map provided by the frontend application as well as the Prometheus with the historical data.
