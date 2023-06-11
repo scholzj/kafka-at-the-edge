@@ -9,6 +9,10 @@ The processed data are synced into the central Kafka cluster where they are coll
 
 TODO: Slides do not yet exist.
 
+### Images
+
+The images used through the slides are referenced in the [`IMAGES.md` file](./IMAGES.md).
+
 ## My Environment
 
 ### IoT Sensors
