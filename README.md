@@ -7,7 +7,9 @@ The processed data are synced into the central Kafka cluster where they are coll
 
 ## Slides
 
-TODO: Slides do not yet exist.
+You can find the slides from this talk as sued at DecConf.CZ 2023 in Brno:
+* [In PDF format](https://drive.google.com/file/d/1UtscI7sFW-oCbHBVRsapIwTaveOCAuar/view?usp=sharing)
+* [In Apple Keynote format](https://drive.google.com/file/d/1AIl2T8HOevRYVW3ynzXEJH1pX4w102Ho/view?usp=sharing)
 
 ### Images
 
